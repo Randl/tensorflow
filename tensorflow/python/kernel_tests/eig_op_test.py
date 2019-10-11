@@ -91,6 +91,10 @@ class EigTest(test.TestCase):
                           np.matmul(np.matmul(v, np.diag(e)), v.transpose()))
 
 
+def SortEigenValues(e):
+  perm = np.argsort(e.real+e.imag, -1)
+  return np.take(e, perm, -1)
+
 def SortEigenDecomposition(e, v):
   if v.ndim < 2:
     return e, v
@@ -170,7 +174,7 @@ def _GetEigTest(dtype_, shape_, compute_v_):
       else:
         tf_e = linalg_ops.eigvals(constant_op.constant(a))
         self.assertAllClose(
-            np.sort(np_e, -1), np.sort(self.evaluate(tf_e), -1), atol=atol)
+            SortEigenValues(np_e), SortEigenValues(self.evaluate(tf_e)), atol=atol)
 
   return Test
 
