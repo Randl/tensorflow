@@ -95,7 +95,7 @@ def SortEigenDecomposition(e, v):
   if v.ndim < 2:
     return e, v
   else:
-    perm = np.argsort(e, -1)
+    perm = np.argsort(1j*e, -1)
     return np.take(e, perm, -1), np.take(v, perm, -1)
 
 
