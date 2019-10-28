@@ -646,9 +646,12 @@ def _EigGrad(op, grad_e, grad_v):
       
       c = math_ops.matmul(f * math_ops.matmul(w, grad_v), v)
       abs_mat = _linalg.adjoint(math_ops.abs(w)) * math_ops.abs(v)
-      maxes = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2), c.dtype)
+      maxes = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2, keepdims=True), c.dtype)
       m = math_ops.argmax(abs_mat, axis=-2)
-      c_diag = - math_ops.matmul(v, c)[..., m, 0]/maxes
+      mask = array_ops.one_hot(m, depth=abs_mat.shape[-2], dtype=dtypes.bool, on_value=True, off_value=False)
+      c_diag = array_ops.boolean_mask(math_ops.matmul(v, c/maxes), mask)
+      #c_diag = - array_ops.matrix_diag_part(array_ops.gather(math_ops.matmul(v, c), m, axis=-2))
+      #c_diag /=maxes
       c = array_ops.matrix_set_diag(c, c_diag)
       grad_a += math_ops.matmul(v, c)
     else:
