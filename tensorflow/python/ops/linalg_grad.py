@@ -634,7 +634,7 @@ def _EigGrad(op, grad_e, grad_v):
       # Mathematically this should not be surprising, since for (k-fold)
       # degenerate eigenvalues, the corresponding eigenvectors are only defined
       # up to arbitrary rotation in a (k-dimensional) subspace.
-      f = -array_ops.matrix_set_diag(
+      f = array_ops.matrix_set_diag(
           math_ops.reciprocal(
               array_ops.expand_dims(e, -2) - array_ops.expand_dims(e, -1)),
           array_ops.zeros_like(e))
@@ -644,13 +644,13 @@ def _EigGrad(op, grad_e, grad_v):
                                    array_ops.matrix_diag(grad_e),
                                    v))
 
-      abs_mat = _linalg.adjoint(math_ops.abs(w)) * math_ops.abs(v)
-      maxes1 = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2, keepdims=True), v.dtype)
-      maxes2 = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2), v.dtype)
-      mmv = array_ops.expand_dims(maxes2, -2)
-      mmh = array_ops.expand_dims(maxes2, -1)
-      c = math_ops.matmul(f * math_ops.matmul(w, grad_v), v*mmh**2)
-      m = math_ops.argmax(abs_mat, axis=-2)
+      # abs_mat = _linalg.adjoint(math_ops.abs(w)) * math_ops.abs(v)
+      # maxes1 = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2, keepdims=True), v.dtype)
+      # maxes2 = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2), v.dtype)
+      # mmv = array_ops.expand_dims(maxes2, -2)
+      # mmh = array_ops.expand_dims(maxes2, -1)
+      # m = math_ops.argmax(abs_mat, axis=-2)
+      c = math_ops.matmul(f * math_ops.matmul(w, grad_v), v) #*mmh**2)
       #mask = array_ops.one_hot(m, depth=abs_mat.shape[-2], dtype=dtypes.bool, on_value=True, off_value=False)
       #c_diag = array_ops.boolean_mask(math_ops.matmul(v, c/maxes1), mask)
       #c = array_ops.matrix_set_diag(c, c_diag)
