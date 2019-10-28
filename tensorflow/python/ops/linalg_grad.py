@@ -648,7 +648,7 @@ def _EigGrad(op, grad_e, grad_v):
               f * math_ops.matmul(w, grad_v),
               v))
     else:
-      _, v = linalg_ops.self_adjoint_eig(op.inputs[0])
+      _, v = linalg_ops.eig(op.inputs[0])
       w = math_ops.conj(linalg_ops.matrix_inverse(v))
       grad_a = math_ops.matmul(w,
                                math_ops.matmul(
