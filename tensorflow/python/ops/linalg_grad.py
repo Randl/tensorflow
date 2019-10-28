@@ -643,7 +643,7 @@ def _EigGrad(op, grad_e, grad_v):
                                math_ops.matmul(
                                    array_ops.matrix_diag(grad_e),
                                    v))
-      maxes = math_ops.reduce_max(linalg_ops.adjoint(w) * v, axis=-2)
+      maxes = math_ops.reduce_max(_linalg.adjoint(math_ops.abs(w)) * math_ops.abs(v), axis=-2)
       c = math_ops.matmul(f * math_ops.matmul(w, grad_v), v)
       c = array_ops.matrix_set_diag(c, -array_ops.matrix_diag_part(math_ops.matmul(v, c))/maxes)
       grad_a += math_ops.matmul(v, c)
