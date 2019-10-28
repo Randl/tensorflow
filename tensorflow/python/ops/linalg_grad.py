@@ -624,10 +624,12 @@ def _EigGrad(op, grad_e, grad_v):
   compute_v = op.get_attr("compute_v")
   # a = op.inputs[0], which satisfies
   # a[...,:,:] * v[...,:,i] = e[...,i] * v[...,i]
+  # a = op.inputs[0], which satisfies
+  # a[...,:,:] * v[...,:,i] = e[...,i] * v[...,i]
   with ops.control_dependencies([grad_e, grad_v]):
     if compute_v:
       v = op.outputs[1]
-      w = math_ops.conj(linalg_ops.matrix_inverse(v)) # adjoint matrix of left eigenvectors
+      w = _linalg.adjoint(linalg_ops.matrix_inverse(v))
       # Construct the matrix f(i,j) = (i != j ? 1 / (e_i - e_j) : 0).
       # Notice that because of the term involving f, the gradient becomes
       # infinite (or NaN in practice) when eigenvalues are not unique.
@@ -638,22 +640,22 @@ def _EigGrad(op, grad_e, grad_v):
           math_ops.reciprocal(
               array_ops.expand_dims(e, -2) - array_ops.expand_dims(e, -1)),
           array_ops.zeros_like(e))
-      
-      grad_a = math_ops.matmul(w,
-                               math_ops.matmul(
-                                   array_ops.matrix_diag(grad_e),
-                                   v))
-
-      c = math_ops.matmul(f * math_ops.matmul(w, grad_v), v)
-      grad_a += math_ops.matmul(v, c)
+      grad_a = math_ops.matmul(
+          w,
+          math_ops.matmul(
+              array_ops.matrix_diag(grad_e) +
+              f * math_ops.matmul(v, grad_v, adjoint_a=True),
+              v,
+              adjoint_b=True))
     else:
-      _, v = linalg_ops.eig(op.inputs[0])
-      w = math_ops.conj(linalg_ops.matrix_inverse(v))
+      _, v = linalg_ops.self_adjoint_eig(op.inputs[0])
+      w = _linalg.adjoint(linalg_ops.matrix_inverse(v))
       grad_a = math_ops.matmul(w,
                                math_ops.matmul(
                                    array_ops.matrix_diag(grad_e),
-                                   v))
-    return grad_a
+                                   v,
+                                   adjoint_b=True))
+    return grad_a # dtype of a
 
 @ops.RegisterGradient("SelfAdjointEigV2")
 def _SelfAdjointEigV2Grad(op, grad_e, grad_v):

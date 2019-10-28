@@ -237,7 +237,7 @@ def _GetEigGradTest(dtype_, shape_, compute_v_):
         return e, v
 
       if compute_v_:
-        funcs = [lambda x: Compute(x)[0], lambda x: Compute(x)[1]]
+        funcs = [lambda x: Compute(x)[1], lambda x: Compute(x)[0]]
       else:
         funcs = [linalg_ops.self_adjoint_eigvals]
 
