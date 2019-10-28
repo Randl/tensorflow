@@ -634,19 +634,18 @@ def _EigGrad(op, grad_e, grad_v):
       # Mathematically this should not be surprising, since for (k-fold)
       # degenerate eigenvalues, the corresponding eigenvectors are only defined
       # up to arbitrary rotation in a (k-dimensional) subspace.
-      f = array_ops.matrix_set_diag(
+      f = -array_ops.matrix_set_diag(
           math_ops.reciprocal(
               array_ops.expand_dims(e, -2) - array_ops.expand_dims(e, -1)),
           array_ops.zeros_like(e))
+      
       grad_a = math_ops.matmul(w,
                                math_ops.matmul(
                                    array_ops.matrix_diag(grad_e),
                                    v))
-      grad_a += math_ops.matmul(
-          v,
-          math_ops.matmul(
-              f * math_ops.matmul(w, grad_v),
-              v))
+      c = math_ops.matmul(f * math_ops.matmul(w, grad_v), v)
+      c += array_ops.matrix_set_diag(c, matrix_diag_part(math_ops.matmul(v, c)))
+      grad_a += math_ops.matmul(v, c)
     else:
       _, v = linalg_ops.eig(op.inputs[0])
       w = math_ops.conj(linalg_ops.matrix_inverse(v))
