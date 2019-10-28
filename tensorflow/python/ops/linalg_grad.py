@@ -638,11 +638,14 @@ def _EigGrad(op, grad_e, grad_v):
           math_ops.reciprocal(
               array_ops.expand_dims(e, -2) - array_ops.expand_dims(e, -1)),
           array_ops.zeros_like(e))
-      grad_a = math_ops.matmul(
-          w,
+      grad_a = math_ops.matmul(w,
+                               math_ops.matmul(
+                                   array_ops.matrix_diag(grad_e),
+                                   v))
+      grad_a += math_ops.matmul(
+          v,
           math_ops.matmul(
-              array_ops.matrix_diag(grad_e) +
-              f * math_ops.matmul(v, grad_v, adjoint_a=True),
+              f * math_ops.matmul(w, grad_v),
               v))
     else:
       _, v = linalg_ops.self_adjoint_eig(op.inputs[0])

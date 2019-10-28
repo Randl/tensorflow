@@ -256,7 +256,7 @@ if __name__ == "__main__":
   if not test.is_built_with_rocm():
     # ROCm does not support BLAS operations for complex types
     dtypes_to_test += [dtypes_lib.complex64, dtypes_lib.complex128]
-  for compute_v in [False]:
+  for compute_v in True, False:
     for dtype in dtypes_to_test:
       for size in 1, 2, 5, 10:
         for batch_dims in [(), (3,)] + [(3, 2)] * (max(size, size) < 10):
