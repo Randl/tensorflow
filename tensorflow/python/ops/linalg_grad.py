@@ -644,7 +644,8 @@ def _EigGrad(op, grad_e, grad_v):
               array_ops.matrix_diag(grad_e) +
               f * math_ops.matmul(v, grad_v, adjoint_a=True),
               v,
-              adjoint_b=True))
+              adjoint_b=True),
+        adjoint_a=True)
     else:
       _, v = linalg_ops.self_adjoint_eig(op.inputs[0])
       w = linalg_ops.matrix_inverse(v)
@@ -652,7 +653,8 @@ def _EigGrad(op, grad_e, grad_v):
                                math_ops.matmul(
                                    array_ops.matrix_diag(grad_e),
                                    v,
-                                   adjoint_b=True))
+                                   adjoint_b=True),
+                               adjoint_a=True)
     return grad_a
 
 @ops.RegisterGradient("SelfAdjointEigV2")
