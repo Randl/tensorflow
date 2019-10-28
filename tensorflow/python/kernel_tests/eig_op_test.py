@@ -188,11 +188,11 @@ def _GetEigTest(dtype_, shape_, compute_v_):
   return Test
 
 
-class SelfAdjointEigGradTest(test.TestCase):
+class EigGradTest(test.TestCase):
   pass  # Filled in below
 
 
-def _GetSelfAdjointEigGradTest(dtype_, shape_, compute_v_):
+def _GetEigGradTest(dtype_, shape_, compute_v_):
 
   def Test(self):
     np.random.seed(1)
