@@ -643,15 +643,16 @@ def _EigGrad(op, grad_e, grad_v):
                                math_ops.matmul(
                                    array_ops.matrix_diag(grad_e),
                                    v))
-      
-      c = math_ops.matmul(f * math_ops.matmul(w, grad_v), v)
+
       abs_mat = _linalg.adjoint(math_ops.abs(w)) * math_ops.abs(v)
-      maxes = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2, keepdims=True), c.dtype)
+      maxes1 = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2, keepdims=True), c.dtype)
+      maxes2 = math_ops.cast(math_ops.reduce_max(abs_mat, axis=-2), c.dtype)
+      mmv = array_ops.expand_dims(maxes2, -2)
+      mmh = array_ops.expand_dims(maxes2, -1)
+      c = math_ops.matmul(f * math_ops.matmul(w*mmh, grad_v), v*mmv)
       m = math_ops.argmax(abs_mat, axis=-2)
       mask = array_ops.one_hot(m, depth=abs_mat.shape[-2], dtype=dtypes.bool, on_value=True, off_value=False)
-      c_diag = array_ops.boolean_mask(math_ops.matmul(v, c/maxes), mask)
-      #c_diag = - array_ops.matrix_diag_part(array_ops.gather(math_ops.matmul(v, c), m, axis=-2))
-      #c_diag /=maxes
+      c_diag = array_ops.boolean_mask(math_ops.matmul(v, c/maxes1), mask)
       c = array_ops.matrix_set_diag(c, c_diag)
       grad_a += math_ops.matmul(v, c)
     else:
