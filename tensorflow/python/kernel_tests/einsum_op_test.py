@@ -287,12 +287,22 @@ class EinsumGradTest(test.TestCase):
   def _check_gradient(self, s, *input_shapes):
     with self.cached_session():
       r = np.random.RandomState(0)
-      inputs = [np.array(r.randn(*shape), np.float64) for shape in input_shapes]
-      input_tensors = [constant_op.constant(x, shape=x.shape) for x in inputs]
-      analytical, numerical = gradient_checker_v2.compute_gradient(
-          lambda *xs: gen_linalg_ops.einsum(xs, s), input_tensors)
-      self.assertLess(
-          gradient_checker_v2.max_error(analytical, numerical), 1e-4)
+      for dtype in (np.float32, np.float64, np.complex64, np.complex128):
+        if dtype in (np.float32, np.complex64):
+          tol = 1e-2
+        else:
+          tol = 1e-4
+        if dtype == np.complex64 or dtype == np.complex128:
+          inputs = [np.array(r.randn(*shape), dtype) +
+                    1j*np.array(r.randn(*shape), dtype)
+                    for shape in input_shapes]
+        else:
+          inputs = [np.array(r.randn(*shape), dtype) for shape in input_shapes]
+        input_tensors = [constant_op.constant(x, shape=x.shape) for x in inputs]
+        analytical, numerical = gradient_checker_v2.compute_gradient(
+            lambda *xs: gen_linalg_ops.einsum(xs, s), input_tensors)
+        self.assertLess(
+            gradient_checker_v2.max_error(analytical, numerical), tol)
 
   @test_util.disable_xla('b/131919749')
   def testUnary(self):
